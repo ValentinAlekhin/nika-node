@@ -1,6 +1,6 @@
 {
   "port": 5000,
-  "jwtSecret": "valentinMern",
+  "jwtSecret": "nikazaebis",
   "mongoUrl": "mongodb+srv://valentin:2Fk63cFSJ4B16yWx@cluster0-mjs8z.mongodb.net/nika?retryWrites=true&w=majority",
   "baseUrl": "http://localhost:5000"
 }

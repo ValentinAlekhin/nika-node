@@ -5,6 +5,12 @@ const mongoose = require('mongoose')
 const app = express()
 const PORT = config.get('port') || 5000
 
+app.use(express.json({ extended: true }))
+
+app.use('/api/auth', require('./routes/auth'))
+
+start()
+
 async function start() {
   try {
     await mongoose.connect(config.get('mongoUrl'), {
