@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const config = require('config')
 const mongoose = require('mongoose')
@@ -7,10 +8,10 @@ const PORT = config.get('port') || 5000
 
 app.use(express.json({ extended: true }))
 
+app.use('/data', express.static(path.join(__dirname, 'data')))
 
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/category', require('./routes/category'))
-
 
 start()
 

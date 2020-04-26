@@ -15,6 +15,24 @@ const translateKey = config.get('translateKey')
 const webpPath = path.join(__dirname, '..', 'data', 'webp')
 const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
 
+
+router.post('/get', 
+  async (req, res) => {
+    try {
+      
+      const { category } = req.body
+
+      const cards = await GalleryCard.find({ category: category })
+
+      res.json({ cards })
+
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ message: 'Что-то пошло не так' })
+    }
+  }
+)
+
 router.post(
   '/add-title-img',
   cardMiddleware.single('img'),
@@ -27,28 +45,28 @@ router.post(
       const [ , category, title ] = galleryCard.galleryUrl.split('/')
 
 
-      // await fs.mkdir(path.join(webpPath, category, title))
-      // await fs.mkdir(path.join(jpgPath, category, title))
+      await fs.mkdir(path.join(webpPath, category, title))
+      await fs.mkdir(path.join(jpgPath, category, title))
 
-      // await sharp(req.file.buffer)
-      //   .jpeg({
-      //     quality: 80,
-      //     chromaSubsampling: '4:2:0'
-      //   })
-      //   .toFile(path.join(jpgPath, category, title, id + '.jpg'))
-        
-      // await sharp(req.file.buffer)
-      //   .webp()
-      //   .toFile(path.join(webpPath, category, title, id + '.webp'))
-
-        await galleryCard.update({
-          imgUrl: {
-            webp: `/data/webp/${category}/${title}/${id}.webp`,
-            jpg: `/data/webp/${category}/${title}/${id}.jpg`
-          }
+      await sharp(req.file.buffer)
+        .jpeg({
+          quality: 80,
+          chromaSubsampling: '4:2:0'
         })
+        .toFile(path.join(jpgPath, category, title, id + '.jpg'))
+        
+      await sharp(req.file.buffer)
+        .webp()
+        .toFile(path.join(webpPath, category, title, id + '.webp'))
 
-        res.json({ message: 'Saved' })
+      await galleryCard.update({
+        imgUrl: {
+          webp: `/data/webp/${category}/${title}/${id}.webp`,
+          jpg: `/data/jpg/${category}/${title}/${id}.jpg`
+        }
+      })
+
+      res.json({ message: 'Saved' })
 
     } catch (err) {
       console.log(err)
