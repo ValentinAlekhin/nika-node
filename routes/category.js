@@ -33,6 +33,17 @@ router.post('/get',
   }
 )
 
+router.post('/remove',
+  async (req, res) => {
+    try {
+      
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ message: 'Что-то пошло не так' })
+    }
+  }
+)
+
 router.post(
   '/add-title-img',
   cardMiddleware.single('img'),
@@ -48,7 +59,12 @@ router.post(
       await fs.mkdir(path.join(webpPath, category, title))
       await fs.mkdir(path.join(jpgPath, category, title))
 
+      const { width, height } = await sharp(req.file.buffer).metadata()
+
+      const size = width > height ? height: width
+
       await sharp(req.file.buffer)
+        .resize(size, size)
         .jpeg({
           quality: 80,
           chromaSubsampling: '4:2:0'
@@ -56,6 +72,7 @@ router.post(
         .toFile(path.join(jpgPath, category, title, id + '.jpg'))
         
       await sharp(req.file.buffer)
+        .resize(size, size)
         .webp()
         .toFile(path.join(webpPath, category, title, id + '.webp'))
 
