@@ -41,8 +41,8 @@ router.post('/remove',
       const candidate =  await GalleryCard.findById(id)
       const { category, dir } = candidate
       
-      rimraf(path.join(webpPath, category, dir), err => console.log(err))
-      rimraf(path.join(jpgPath, category, dir), err => console.log(err))
+      rimraf(path.join(webpPath, category, dir), () => {})
+      rimraf(path.join(jpgPath, category, dir), () => {})
 
       await candidate.remove()
       res.json({ id })
