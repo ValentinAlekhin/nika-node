@@ -2,6 +2,7 @@ const { Schema, model, Types } = require('mongoose')
 
 const schema = new Schema({
   title: { type: String, required: true },
+  dir: { type: String },
   category: { type: String, required: true },
   imgUrl: {
     webp: { type: String },

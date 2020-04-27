@@ -1,5 +1,6 @@
 const path = require('path')
 const fs = require('fs-extra')
+const rimraf = require('rimraf')
 const { Router } = require('express')
 const sharp = require('sharp')
 const GalleryCard = require('../models/GallaryCard')
@@ -36,7 +37,15 @@ router.post('/get',
 router.post('/remove',
   async (req, res) => {
     try {
+      const { id } = req.body
+      const candidate =  await GalleryCard.findById(id)
+      const { category, dir } = candidate
       
+      rimraf(path.join(webpPath, category, dir), err => console.log(err))
+      rimraf(path.join(jpgPath, category, dir), err => console.log(err))
+
+      await candidate.remove()
+      res.json({ id })
     } catch (err) {
       console.log(err)
       res.status(500).json({ message: 'Что-то пошло не так' })
@@ -107,6 +116,7 @@ router.post(
 
       const galleryCard = new GalleryCard({
         category, title, galleryUrl,
+        dir: titleToUrl,
         imgUrl: {
           webp: '',
           jpg: ''
