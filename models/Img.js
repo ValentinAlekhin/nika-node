@@ -7,9 +7,10 @@ const schema = new Schema({
     jpg: { type: String, required: true },
   },
   size: {
-    with: { type: Number, required: true },
-    height: { type: Number, required: true }
+    width: { type: Number },
+    height: { type: Number }
   },
+  order: { type: Number, required: true },
   description: { type: String }
 })
 

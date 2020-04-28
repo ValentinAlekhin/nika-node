@@ -12,7 +12,7 @@ const fileFilter = (req, file, cb) => {
   }
 }
 
-module .exports = multer({
+module.exports = multer({
   storage,
   fileFilter
 })

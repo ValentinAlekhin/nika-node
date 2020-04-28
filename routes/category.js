@@ -6,7 +6,7 @@ const sharp = require('sharp')
 const GalleryCard = require('../models/GallaryCard')
 const Gallery = require('../models/Gallery')
 const auth = require('../middleware/auth')
-const cardMiddleware = require('../middleware/cardImg.js')
+const imgMiddleware = require('../middleware/img.js')
 const translate = require('translate')
 const config = require('config')
 const router = Router()
@@ -59,7 +59,7 @@ router.post('/remove',
 
 router.post(
   '/add-title-img',
-  cardMiddleware.single('img'),
+  imgMiddleware.single('img'),
   async (req, res) => {
     try {
 
@@ -89,8 +89,8 @@ router.post(
         .webp()
         .toFile(path.join(webpPath, category, title, id + '.webp'))
 
-      await galleryCard.update({
-        imgUrl: {
+      await GalleryCard.updateOne({ _id: id } ,{
+        path: {
           webp: `/data/webp/${category}/${title}/${id}.webp`,
           jpg: `/data/jpg/${category}/${title}/${id}.jpg`
         }
