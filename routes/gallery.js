@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs-extra')
 const sharp = require('sharp')
 const { Router } = require('express')
+const shortId = require('shortid')
 const imgMiddleware = require('../middleware/img.js')
 const Gallery = require('../models/Gallery')
 const Img = require('../models/Img')
@@ -36,47 +37,48 @@ router.post('/add-img',
 
       const galleryId = gallery.id
 
-      let order = (await Img.find({ galleryId })).length
+      let order = gallery.images.length
       console.log(order)
 
       const imgArr = []
 
-      req.files.forEach(async file => {
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i]
+
         order++
 
         const { width, height } = await sharp(file.buffer).metadata()
+
+        const id = shortId.generate()
+
+        const webp = `/data/webp/${category}/${title}/${id}.webp`
+        const jpg = `/data/jpg/${category}/${title}/${id}.jpg`
         
-        const img = new Img({
+        const img = {
           galleryId,
           sizes: { width, height },
-          order
-        })
+          path: { webp, jpg },
+          order,
+          id
+        }
 
-        const id = img.id
-
-        // await sharp(file.buffer)
-        //   .jpeg({
-        //   quality: 80,
-        //   chromaSubsampling: '4:2:0'
-        //   })
-        //   .toFile(path.join(jpgPath, category, title, id + '.jpg'))
+        await sharp(file.buffer)
+          .jpeg({
+          quality: 80,
+          chromaSubsampling: '4:2:0'
+          })
+          .toFile(path.join(jpgPath, category, title, id + '.jpg'))
         
-        // await sharp(file.buffer)
-        //   .webp()
-        //   .toFile(path.join(webpPath, category, title, id + '.webp'))
+        await sharp(file.buffer)
+          .webp()
+          .toFile(path.join(webpPath, category, title, id + '.webp'))
 
-        // img.path.webp = `/data/webp/${category}/${title}/${id}.webp`,
-        // img.path.jpg = `/data/jpg/${category}/${title}/${id}.jpg`
+        imgArr[i] = img
+      }
 
-        imgArr.push(img)
-
-        await img.save()
+      await gallery.update({
+        '$addToSet': { 'images': imgArr }
       })
-
-      console.log(imgArr)
-      // await gallery.update({
-      //   '$addToSet': { 'images': imgArr }
-      // })
 
       res.json({ message: 'Фото загружены' })
     } catch (err) {
