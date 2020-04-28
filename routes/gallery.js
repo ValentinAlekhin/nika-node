@@ -38,7 +38,6 @@ router.post('/add-img',
       const galleryId = gallery.id
 
       let order = gallery.images.length
-      console.log(order)
 
       const imgArr = []
 
@@ -81,6 +80,37 @@ router.post('/add-img',
       })
 
       res.json({ message: 'Фото загружены' })
+    } catch (err) {
+      console.log(err)
+      res.status(500).json({ message: 'Что-то пошло не так' })
+    }
+  }
+)
+
+router.post('/remove-img',
+  async (req, res) => {
+    try {
+      const { id, galleryId, category, titleUrl } = req.body
+
+      const gallery = await Gallery.findById(galleryId)
+      const prevImages = gallery.images
+
+      const nextImages = prevImages
+        .filter(img => img.id !== id)
+        .sort((a, b) => a.order - b.order)
+        .map((img, i) => ({ ...img, order: i + 1 }))
+
+      gallery.images = nextImages
+
+      const pathToWebp = path.join(webpPath, category, titleUrl, id + '.webp')
+      const pathToJpg = path.join(jpgPath, category, titleUrl, id + '.jpg')
+
+      await fs.remove(pathToJpg)
+      await fs.remove(pathToWebp)
+
+      await gallery.save()
+
+      res.json({ message: 'Изображение удалено' })
     } catch (err) {
       console.log(err)
       res.status(500).json({ message: 'Что-то пошло не так' })
