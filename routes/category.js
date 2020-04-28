@@ -4,6 +4,7 @@ const rimraf = require('rimraf')
 const { Router } = require('express')
 const sharp = require('sharp')
 const GalleryCard = require('../models/GallaryCard')
+const Gallery = require('../models/Gallery')
 const auth = require('../middleware/auth')
 const cardMiddleware = require('../middleware/cardImg.js')
 const translate = require('translate')
@@ -38,13 +39,16 @@ router.post('/remove',
   async (req, res) => {
     try {
       const { id } = req.body
-      const candidate =  await GalleryCard.findById(id)
-      const { category, dir } = candidate
+      const CardCandidate =  await GalleryCard.findById(id)
+      const { category, dir, galleryId } = CardCandidate
+
+      const gallaryCandidate = await Gallery.findById(galleryId)
       
       rimraf(path.join(webpPath, category, dir), () => {})
       rimraf(path.join(jpgPath, category, dir), () => {})
 
-      await candidate.remove()
+      await CardCandidate.remove()
+      await gallaryCandidate.remove()
       res.json({ id })
     } catch (err) {
       console.log(err)
@@ -107,22 +111,30 @@ router.post(
     try {
       const { category, title } = req.body
 
-      let titleToUrl = await translate(title, { 
+      let titleUrl = await translate(title, { 
         from: 'ru', to: 'en',
         engine: translateEngine, key: translateKey
       })
-      titleToUrl = titleToUrl.split(' ').join('-').toLowerCase()
-      const galleryUrl = `/${category}/${titleToUrl}`
+      titleUrl = titleUrl.split(' ').join('-').toLowerCase()
+      const galleryUrl = `/${category}/${titleUrl}`
+
+      const gallery = new Gallery({
+        title, category, titleUrl
+      })
+
+      const order = (await GalleryCard.find({ category: category })).length + 1
 
       const galleryCard = new GalleryCard({
-        category, title, galleryUrl,
-        dir: titleToUrl,
+        category, title, galleryUrl, order,
+        dir: titleUrl,
+        galleryId: gallery.id,
         imgUrl: {
           webp: '',
           jpg: ''
         }
       })
 
+      await gallery.save()
       await galleryCard.save()
 
       res.json({ id: galleryCard._id })

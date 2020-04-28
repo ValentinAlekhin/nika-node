@@ -12,6 +12,7 @@ app.use('/data', express.static(path.join(__dirname, 'data')))
 
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/category', require('./routes/category'))
+app.use('/api/gallery', require('./routes/gallery'))
 
 start()
 
