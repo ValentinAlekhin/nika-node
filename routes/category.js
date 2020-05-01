@@ -18,7 +18,8 @@ const webpPath = path.join(__dirname, '..', 'data', 'webp')
 const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
 
 
-router.post('/get', 
+router.post(
+  '/get', 
   async (req, res) => {
     try {
       
@@ -35,7 +36,9 @@ router.post('/get',
   }
 )
 
-router.post('/remove',
+router.post(
+  '/remove',
+  auth,
   async (req, res) => {
     try {
       const { id } = req.body
@@ -59,6 +62,7 @@ router.post('/remove',
 
 router.post(
   '/add-title-img',
+  auth,
   imgMiddleware.single('img'),
   async (req, res) => {
     try {
@@ -107,6 +111,7 @@ router.post(
 
 router.post(
   '/add-card',
+  auth,
   async (req, res) => {
     try {
       const { category, title } = req.body

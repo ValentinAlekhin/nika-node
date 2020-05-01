@@ -5,13 +5,14 @@ const { Router } = require('express')
 const shortId = require('shortid')
 const imgMiddleware = require('../middleware/img.js')
 const Gallery = require('../models/Gallery')
-const Img = require('../models/Img')
+const auth = require('../middleware/auth')
 const router = Router()
 
 const webpPath = path.join(__dirname, '..', 'data', 'webp')
 const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
 
-router.post('/get',
+router.post(
+  '/get',
   async (req, res) => {
     try {
       const { category, titleUrl } = req.body
@@ -25,7 +26,9 @@ router.post('/get',
   }
 )
 
-router.post('/add-img',
+router.post(
+  '/add-img',
+  auth,
   imgMiddleware.array('images', 50),
   async (req, res) => {
     try {
@@ -87,7 +90,9 @@ router.post('/add-img',
   }
 )
 
-router.post('/remove-img',
+router.post(
+  '/remove-img',
+  auth,
   async (req, res) => {
     try {
       const { id, galleryId, category, titleUrl } = req.body
