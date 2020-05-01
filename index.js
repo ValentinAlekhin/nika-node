@@ -9,6 +9,7 @@ const PORT = config.get('port') || 5000
 app.use(express.json({ extended: true }))
 
 app.use('/data', express.static(path.join(__dirname, 'data')))
+app.use(express.static(path.join(__dirname, 'client', 'build')))
 
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/category', require('./routes/category'))
