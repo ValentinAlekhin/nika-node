@@ -2,6 +2,17 @@
 # Created by https://www.gitignore.io/api/node,linux,macos,windows,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=node,linux,macos,windows,visualstudiocode
 
+### Data ###
+
+/data/webp/drawing/*
+/data/webp/other/*
+/data/webp/photo/*
+/data/webp/painting/*
+/data/jpg/drawing/*
+/data/jpg/other/*
+/data/jpg/photo/*
+/data/jpg/painting/*
+
 ### Client ###
 /client
 

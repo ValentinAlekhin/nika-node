@@ -1,9 +1,8 @@
 {
-  "port": 5000,
+  "port": 443,
   "jwtSecret": "nikazaebis",
   "mongoUrl": "mongodb+srv://valentin:2Fk63cFSJ4B16yWx@cluster0-mjs8z.mongodb.net/nika?retryWrites=true&w=majority",
-  "baseUrl": "http://localhost:5000",
+  "baseUrl": "http://localhost:443",
   "translateEngine": "yandex",
   "translateKey": "trnsl.1.1.20200425T144214Z.27179e401860f0d4.db1c650e35995d8616f77ef3e63fc749f3647ce0"
 }
-
