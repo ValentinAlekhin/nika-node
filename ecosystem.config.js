@@ -1,10 +1,15 @@
 module.exports = {
   apps : [{
+    name: 'Nikadmitrieva',
     script: 'index.js',
-    watch: '.'
-  }, {
-    script: './service-worker/',
-    watch: ['./service-worker']
+    autorestart: true,
+    watch: false,
+    env: {
+      NODE_ENV: 'development',
+    },
+    env_production: {
+      NODE_ENV: 'production',
+    },
   }],
 
   deploy : {

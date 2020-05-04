@@ -30,7 +30,7 @@ async function start() {
       useFindAndModify: false
     })
 
-    app.listen(PORT, () => console.log(`Server has been sterted on port: ${PORT}`))
+    app.listen(PORT, () => console.log(`Server has been started on port: ${PORT} in ${process.env.NODE_ENV} mode`))
   } catch (err) {
     console.log('Server error:', err)
     process.exit(1)
