@@ -17,12 +17,11 @@ const webpPath = path.join(__dirname, '..', 'data', 'webp')
 const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
 
 
-router.post(
-  '/get', 
+router.get('/', 
   async (req, res) => {
     try {
       
-      const { category } = req.body
+      const { category } = req.query
 
       const cards = await Gallery.find({ category })
 
@@ -115,10 +114,11 @@ router.post(
       titleUrl = titleUrl.split(' ').join('-').toLowerCase()
       const route = `/${category}/${titleUrl}`
 
-      const order = (await Gallery.find({ category: category })).length + 1
+      const order = await Gallery.countDocuments({ category })
 
       const gallery = new Gallery({
         title, category, route,
+        titleEn: titleUrl, 
         order, titleImg: {
           webp: '',
           jpg: ''

@@ -11,13 +11,12 @@ const router = Router()
 const webpPath = path.join(__dirname, '..', 'data', 'webp')
 const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
 
-router.post(
-  '/get',
+router.get('/',
   async (req, res) => {
     try {
-      const { route } = req.body
+      const { category, title } = req.query
 
-      const gallery = await Gallery.findOne({ route })
+      const gallery = await Gallery.findOne({ category, titleEn: title })
 
       res.json({ gallery })
     } catch (err) {
@@ -72,7 +71,7 @@ router.post(
         imgArr[i] = img
       }
 
-      await gallery.update({
+      await Gallery.findOneAndUpdate({ _id: id } ,{
         '$addToSet': { 'images': imgArr }
       })
 

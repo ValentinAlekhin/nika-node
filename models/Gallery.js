@@ -2,6 +2,7 @@ const { Schema, model, Types } = require('mongoose')
 
 const schema = new Schema({
   title: { type: String, required: true },
+  titleEn: { type: String, required: true },
   category: { type: String, required: true },
   titleImg: {
     webp: { type: String },
@@ -9,7 +10,7 @@ const schema = new Schema({
   },
   route: { type: String, required: true },
   description: { type: String },
-  order: { type: Boolean },
+  order: { type: Number, required: true },
   images: [
     // {
     //   path: {
