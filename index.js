@@ -14,6 +14,7 @@ app.use(express.static(path.join(__dirname, 'client', 'build')))
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/category', require('./routes/category'))
 app.use('/api/gallery', require('./routes/gallery'))
+app.use('/api/main-pages', require('./routes/mainPages'))
 
 start()
 
@@ -22,7 +23,8 @@ async function start() {
     await mongoose.connect(config.get('mongoUrl'), {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      useCreateIndex: true
+      useCreateIndex: true,
+      useFindAndModify: false
     })
 
     app.listen(PORT, () => console.log(`Server has been sterted on port: ${PORT}`))

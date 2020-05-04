@@ -3,7 +3,6 @@ const fs = require('fs-extra')
 const rimraf = require('rimraf')
 const { Router } = require('express')
 const sharp = require('sharp')
-const GalleryCard = require('../models/GallaryCard')
 const Gallery = require('../models/Gallery')
 const auth = require('../middleware/auth')
 const imgMiddleware = require('../middleware/img.js')
@@ -25,7 +24,7 @@ router.post(
       
       const { category } = req.body
 
-      const cards = await GalleryCard.find({ category: category })
+      const cards = await Gallery.find({ category })
 
       res.json({ cards })
 
@@ -42,16 +41,13 @@ router.post(
   async (req, res) => {
     try {
       const { id } = req.body
-      const CardCandidate =  await GalleryCard.findById(id)
-      const { category, dir, galleryId } = CardCandidate
 
-      const gallaryCandidate = await Gallery.findById(galleryId)
+      const candidate = await Gallery.findById(id)
       
-      rimraf(path.join(webpPath, category, dir), () => {})
-      rimraf(path.join(jpgPath, category, dir), () => {})
+      rimraf(path.join(webpPath, id), () => {})
+      rimraf(path.join(jpgPath, id), () => {})
 
-      await CardCandidate.remove()
-      await gallaryCandidate.remove()
+      await candidate.remove()
       res.json({ id })
     } catch (err) {
       console.log(err)
@@ -69,14 +65,10 @@ router.post(
 
       const id = req.file.originalname
 
-      const galleryCard = await GalleryCard.findById(id)
-      const [ , category, title ] = galleryCard.galleryUrl.split('/')
-
-
-      await fs.mkdir(path.join(webpPath, category, title))
-      await fs.mkdir(path.join(jpgPath, category, title))
-
       const { width, height } = await sharp(req.file.buffer).metadata()
+
+      await fs.mkdir(path.join(webpPath, id))
+      await fs.mkdir(path.join(jpgPath, id))
 
       const size = width > height ? height: width
 
@@ -86,17 +78,17 @@ router.post(
           quality: 80,
           chromaSubsampling: '4:2:0'
         })
-        .toFile(path.join(jpgPath, category, title, id + '.jpg'))
+        .toFile(path.join(jpgPath, id, 'title.jpg'))
         
       await sharp(req.file.buffer)
         .resize(size, size)
         .webp()
-        .toFile(path.join(webpPath, category, title, id + '.webp'))
+        .toFile(path.join(webpPath, id, 'title.webp'))
 
-      await GalleryCard.updateOne({ _id: id } ,{
-        path: {
-          webp: `/data/webp/${category}/${title}/${id}.webp`,
-          jpg: `/data/jpg/${category}/${title}/${id}.jpg`
+      await Gallery.updateOne({ _id: id } ,{
+        titleImg: {
+          webp: `/data/webp/${id}/title.webp`,
+          jpg: `/data/jpg/${id}/title.jpg`
         }
       })
 
@@ -121,28 +113,25 @@ router.post(
         engine: translateEngine, key: translateKey
       })
       titleUrl = titleUrl.split(' ').join('-').toLowerCase()
-      const galleryUrl = `/${category}/${titleUrl}`
+      const route = `/${category}/${titleUrl}`
+
+      const order = (await Gallery.find({ category: category })).length + 1
 
       const gallery = new Gallery({
-        title, category, titleUrl
-      })
-
-      const order = (await GalleryCard.find({ category: category })).length + 1
-
-      const galleryCard = new GalleryCard({
-        category, title, galleryUrl, order,
-        dir: titleUrl,
-        galleryId: gallery.id,
-        imgUrl: {
+        title, category, route,
+        order, titleImg: {
           webp: '',
           jpg: ''
+        },
+        index: {
+          exist: false,
+          order: null,
         }
       })
 
       await gallery.save()
-      await galleryCard.save()
 
-      res.json({ id: galleryCard._id })
+      res.json({ id: gallery._id })
 
     } catch (err) {
       console.log(err)

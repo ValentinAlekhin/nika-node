@@ -15,9 +15,9 @@ router.post(
   '/get',
   async (req, res) => {
     try {
-      const { category, titleUrl } = req.body
+      const { route } = req.body
 
-      const gallery = await Gallery.findOne({ category, titleUrl })
+      const gallery = await Gallery.findOne({ route })
 
       res.json({ gallery })
     } catch (err) {
@@ -32,13 +32,8 @@ router.post(
   imgMiddleware.array('images', 50),
   async (req, res) => {
     try {
-      const [ category, title ] = req.files[0].originalname.split('_')
-      const gallery = await Gallery.findOne({
-        category, 
-        titleUrl: title 
-      })
-
-      const galleryId = gallery.id
+      const [ id ] = req.files[0].originalname.split('_')
+      const gallery = await Gallery.findOne({ _id: id })
 
       let order = gallery.images.length
 
@@ -51,17 +46,16 @@ router.post(
 
         const { width, height } = await sharp(file.buffer).metadata()
 
-        const id = shortId.generate()
+        const imageId = shortId.generate()
 
-        const webp = `/data/webp/${category}/${title}/${id}.webp`
-        const jpg = `/data/jpg/${category}/${title}/${id}.jpg`
+        const webp = `/data/webp/${id}/${imageId}.webp`
+        const jpg = `/data/jpg/${id}/${imageId}.jpg`
         
         const img = {
-          galleryId,
+          order,
           sizes: { width, height },
           path: { webp, jpg },
-          order,
-          id
+          id: imageId
         }
 
         await sharp(file.buffer)
@@ -69,11 +63,11 @@ router.post(
           quality: 80,
           chromaSubsampling: '4:2:0'
           })
-          .toFile(path.join(jpgPath, category, title, id + '.jpg'))
+          .toFile(path.join(jpgPath, id, imageId + '.jpg'))
         
         await sharp(file.buffer)
           .webp()
-          .toFile(path.join(webpPath, category, title, id + '.webp'))
+          .toFile(path.join(webpPath, id, imageId + '.webp'))
 
         imgArr[i] = img
       }
@@ -95,7 +89,7 @@ router.post(
   auth,
   async (req, res) => {
     try {
-      const { id, galleryId, category, titleUrl } = req.body
+      const { id, galleryId } = req.body
 
       const gallery = await Gallery.findById(galleryId)
       const prevImages = gallery.images
@@ -107,8 +101,8 @@ router.post(
 
       gallery.images = nextImages
 
-      const pathToWebp = path.join(webpPath, category, titleUrl, id + '.webp')
-      const pathToJpg = path.join(jpgPath, category, titleUrl, id + '.jpg')
+      const pathToWebp = path.join(webpPath, galleryId, id + '.webp')
+      const pathToJpg = path.join(jpgPath, galleryId, id + '.jpg')
 
       await fs.remove(pathToJpg)
       await fs.remove(pathToWebp)

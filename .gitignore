@@ -4,14 +4,8 @@
 
 ### Data ###
 
-/data/webp/drawing/*
-/data/webp/other/*
-/data/webp/photo/*
-/data/webp/painting/*
-/data/jpg/drawing/*
-/data/jpg/other/*
-/data/jpg/photo/*
-/data/jpg/painting/*
+/data/webp/*
+/data/jpg/*
 
 ### Client ###
 /client
