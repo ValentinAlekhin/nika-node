@@ -19,6 +19,8 @@ app.use('/api/category', require('./routes/category'))
 app.use('/api/gallery', require('./routes/gallery'))
 app.use('/api/main-pages', require('./routes/mainPages'))
 
+
+
 start()
 
 async function start() {
