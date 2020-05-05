@@ -3,7 +3,7 @@ module.exports = {
     name: 'Nikadmitrieva',
     script: 'index.js',
     autorestart: true,
-    watch: false,
+    watch: true,
     env: {
       NODE_ENV: 'development',
     },
