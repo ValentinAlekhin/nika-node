@@ -19,13 +19,6 @@ app.use('/api/category', require('./routes/category'))
 app.use('/api/gallery', require('./routes/gallery'))
 app.use('/api/main-pages', require('./routes/mainPages'))
 
-app.get('*', function(req, res){
-
-  res.json({ req });
-})
-
-start()
-
 async function start() {
   try {
     await mongoose.connect(config.get('mongoUrl'), {
@@ -42,3 +35,4 @@ async function start() {
   }
 }
 
+start()
