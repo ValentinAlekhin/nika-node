@@ -1,7 +1,7 @@
 {
   "port": 3001,
   "jwtSecret": "nikazaebis",
-  "mongoUrl": "mongodb+srv://valentin:XE35YmrG0RD9CfSJ@cluster0-dff0d.mongodb.net/nika?retryWrites=true&w=majority",
+  "mongoUrl": "mongodb://localhost:27017/production",
   "baseUrl": "http://localhost:3000",
   "translateEngine": "yandex",
   "translateKey": "trnsl.1.1.20200425T144214Z.27179e401860f0d4.db1c650e35995d8616f77ef3e63fc749f3647ce0"
