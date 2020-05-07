@@ -38,21 +38,34 @@ router.post(
 
       const { login, password } = req.body
 
-      const user = await User.findOne({ login })
+      const firstLogin = await User.countDocuments()
 
-      const isMatch = await bcrypt.compare(password, user.password)
-      if(!isMatch) {
-        return res.status(400).json({ message: 'Некорректные данные' })
+      if (!firstLogin) {
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+        const newUser = new User({
+          login,
+          password: hashedPassword
+        })
+
+        await newUser.save()
+        res.json({ message: 'Новый пользователь создан' })
+      } else {
+          const user = await User.findOne({ login })
+
+          const isMatch = await bcrypt.compare(password, user.password)
+          if(!isMatch) {
+            return res.status(400).json({ message: 'Некорректные данные' })
+          }
+
+          const token = jwt.sign(
+            { userId: user.id },
+            config.get('jwtSecret'),
+            { expiresIn: 3600 }
+          )
+
+          res.json({ token, userId: user.id, message: 'Вы успешно вошли' })
       }
-
-      const token = jwt.sign(
-        { userId: user.id },
-        config.get('jwtSecret'),
-        { expiresIn: 3600 }
-      )
-
-      res.json({ token, userId: user.id, message: 'Вы успешно вошли' })
-
     } catch (err) {
       console.log(err)
       res.status(500).json({ message: 'Что-то пошло не так, попробуйте снова' })

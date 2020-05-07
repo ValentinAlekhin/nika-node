@@ -3,13 +3,10 @@ module.exports = {
     name: 'Nikadmitrieva',
     script: 'index.js',
     autorestart: true,
-    watch: true,
+    watch: false,
     env: {
-      NODE_ENV: 'development',
-    },
-    env_production: {
       NODE_ENV: 'production',
-    },
+    }
   }],
 
   deploy : {
