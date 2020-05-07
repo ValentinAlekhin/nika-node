@@ -4,7 +4,20 @@ const { check, validationResult } = require('express-validator')
 const config = require('config')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const auth = require('../middleware/auth')
 const router = Router()
+
+router.get(
+  '/',
+  auth,
+  async (req, res) => {
+    try {
+      res.json({ message: 'Вы успешно вошли' })
+    } catch (err) {
+      console.log(err)
+    }
+  } 
+)
 
 router.post(
   '/login',
