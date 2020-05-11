@@ -3,6 +3,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const config = require('config')
 const mongoose = require('mongoose')
+const checkDataFolder = require('./helpers/checkDataFolder')
+
+checkDataFolder()
 
 const app = express()
 const PORT = config.get('port') || 5000
