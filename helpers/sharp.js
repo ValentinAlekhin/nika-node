@@ -1,4 +1,6 @@
 const path = require('path')
+const fs = require('fs-extra')
+const rootDir = require('app-root-path').path
 const sharp = require('sharp')
 
 class ImageCompressor {
@@ -7,52 +9,36 @@ class ImageCompressor {
     steps: 5,
     tags: {
       original: 'original',
-      blur: 'placeholder',
+      placeholder: 'placeholder',
       factorName: 'w'
     }
   }) {
     this.img = img
     this.steps = options.steps
     this.stepSize = options.stepSize
-    this.names = this.createFileNames(options.tags, fileName)
     this.tags = options.tags
     this.fileName = fileName
     this.buffer = {},
     this.pathToSave = ''
     this.response = {
       main: {},
+      original: {},
       placeholder: ''
     }
   }
 
-  createFileNames(tags, fileName) {
-    const { original, blur, factorName } = tags
-
-    const sizesNames = Array(this.steps)
-      .fill(factorName)
-      .reduce((acc, value, i) => {
-        acc['w' + (i + 1)] = value + (i + 1) * this.stepSize
-        return acc
-      }, {})
-    
-    return Object.entries({ ...sizesNames, original, blur })
-      .reduce((acc, [ key, value ], i) => {
-        acc[key] = `${fileName}_${value}`
-        return acc
-      }, {})
-  }
-
   async resize(width, height) {
-    const pathToSave = path.join(this.pathToSave, `${this.fileName}_${this.tags.factorName + width}`)
+    const webpName = `${this.fileName}_${width + this.tags.factorName}.webp`
+    const jpegName = `${this.fileName}_${width + this.tags.factorName}.jpeg`
     await sharp(this.buffer.webp)
       .resize(width, height)
-      .toFile(pathToSave + '.webp')
+      .toFile(path.join(rootDir, this.pathToSave, webpName))
     await sharp(this.buffer.jpeg)
       .resize(width, height)
-      .toFile(pathToSave + '.jpeg')
-    this.response.main['w' + width] = {
-      webp: pathToSave + '.webp',
-      jpeg: pathToSave + '.jpeg',
+      .toFile(path.join(rootDir, this.pathToSave, jpegName))
+    this.response.main[width + this.tags.factorName] = {
+      webp: `/${this.pathToSave}/${webpName}`,
+      jpeg: `/${this.pathToSave}/${jpegName}`,
     }
   }
 
@@ -67,12 +53,27 @@ class ImageCompressor {
   }
 
   async blur() {
-    const pathToSave = path.join(this.pathToSave, `${this.fileName}_${this.tags.blur}.jpeg`)
+    const fileName = `${this.fileName}_${this.tags.placeholder}.jpeg`
+    const pathToSave = path.join(rootDir, this.pathToSave, fileName)
     await sharp(this.buffer.jpeg)
       .resize(800, 800)
       .blur(20)
       .toFile(pathToSave)
-    this.response.placeholder = pathToSave
+    this.response.placeholder = `/${this.pathToSave}/${fileName}`
+  }
+
+  async saveOriginal() {
+    const webpName = `${this.fileName}_${this.tags.original}.webp`
+    const jpegName = `${this.fileName}_${this.tags.original}.jpeg`
+
+    await fs.writeFile(path.join(rootDir, this.pathToSave, webpName), this.buffer.webp)
+    await fs.writeFile(path.join(rootDir, this.pathToSave, jpegName), this.buffer.jpeg)
+
+    this.response.original = {
+      webp: `/${this.pathToSave}/${webpName}`,
+      jpeg: `/${this.pathToSave}/${jpegName}`,
+    }
+
   }
 
   async getTitleImages(pathToSave) {
@@ -92,6 +93,32 @@ class ImageCompressor {
         break
       }
     }
+
+    await this.blur()
+
+    return this.response
+  }
+
+  async getGallaryImages(pathToSave) {
+    this.pathToSave = pathToSave
+
+    await this.compress()
+
+    const { width, height } = await sharp(this.img).metadata()
+    const aspectRatio = height / width
+
+    for (let i = this.steps; i > 0; i--) {
+      if (width > i * this.stepSize) {
+        for (let step = i; step > 0; step--) {
+          let currWidth = this.stepSize * step
+          let currHeight = Math.floor(currWidth * aspectRatio)
+          await this.resize(currWidth, currHeight)
+        }
+        break
+      }
+    }
+
+    await this.saveOriginal()
 
     await this.blur()
 

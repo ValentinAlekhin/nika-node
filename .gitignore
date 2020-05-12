@@ -4,8 +4,7 @@
 
 ### Data ###
 
-/data/webp/*
-/data/jpg/*
+/data
 
 ### Client ###
 /client

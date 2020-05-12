@@ -5,8 +5,8 @@ const schema = new Schema({
   titleEn: { type: String, required: true },
   category: { type: String, required: true },
   titleImg: {
-    webp: { type: String },
-    jpg: { type: String }
+    main: { type: Object },
+    placeholder: { type: String }
   },
   route: { type: String, required: true },
   description: { type: String },

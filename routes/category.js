@@ -8,14 +8,13 @@ const auth = require('../middleware/auth')
 const imgMiddleware = require('../middleware/img.js')
 const translate = require('translate')
 const config = require('config')
+const { ImageCompressor } = require('../helpers/sharp')
 const router = Router()
 
 const translateEngine = config.get('translateEngine')
 const translateKey = config.get('translateKey')
 
-const webpPath = path.join(__dirname, '..', 'data', 'webp')
-const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
-
+const dataDir = path.join(__dirname, '..', 'data')
 
 router.get('/', 
   async (req, res) => {
@@ -43,8 +42,7 @@ router.post(
 
       const candidate = await Gallery.findById(id)
       
-      rimraf(path.join(webpPath, id), () => {})
-      rimraf(path.join(jpgPath, id), () => {})
+      rimraf(path.join(dataDir, id), () => {})
 
       await candidate.remove()
       res.json({ id })
@@ -63,32 +61,16 @@ router.post(
     try {
 
       const id = req.file.originalname
+      const galleryDir = path.join(dataDir, id)
 
-      const { width, height } = await sharp(req.file.buffer).metadata()
+      await fs.mkdir(galleryDir)
 
-      await fs.mkdir(path.join(webpPath, id))
-      await fs.mkdir(path.join(jpgPath, id))
+      const titleImage = new ImageCompressor(req.file.buffer, id)
 
-      const size = width > height ? height: width
-
-      await sharp(req.file.buffer)
-        .resize(size, size)
-        .jpeg({
-          quality: 80,
-          chromaSubsampling: '4:2:0'
-        })
-        .toFile(path.join(jpgPath, id, 'title.jpg'))
-        
-      await sharp(req.file.buffer)
-        .resize(size, size)
-        .webp()
-        .toFile(path.join(webpPath, id, 'title.webp'))
+      const response = await titleImage.getTitleImages(path.join('data', id))
 
       await Gallery.updateOne({ _id: id } ,{
-        titleImg: {
-          webp: `/data/webp/${id}/title.webp`,
-          jpg: `/data/jpg/${id}/title.jpg`
-        }
+        titleImg: { ...response }
       })
 
       res.json({ message: 'Saved' })

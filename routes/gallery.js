@@ -6,10 +6,10 @@ const shortId = require('shortid')
 const imgMiddleware = require('../middleware/img.js')
 const Gallery = require('../models/Gallery')
 const auth = require('../middleware/auth')
+const { ImageCompressor } = require('../helpers/sharp')
 const router = Router()
 
-const webpPath = path.join(__dirname, '..', 'data', 'webp')
-const jpgPath = path.join(__dirname, '..', 'data', 'jpg')
+const dataDir = path.join(__dirname, '..', 'data')
 
 router.get('/',
   async (req, res) => {
@@ -33,42 +33,30 @@ router.post(
     try {
       const [ id ] = req.files[0].originalname.split('_')
       const gallery = await Gallery.findOne({ _id: id })
+      const galleryDir = path.join('data', id)
 
       let order = gallery.images.length
 
       const imgArr = []
 
-      for (let i = 0; i < req.files.length; i++) {
-        const file = req.files[i]
-
+      const files = req.files
+      for (const file of files) {
         order++
-
-        const { width, height } = await sharp(file.buffer).metadata()
 
         const imageId = shortId.generate()
 
-        const webp = `/data/webp/${id}/${imageId}.webp`
-        const jpg = `/data/jpg/${id}/${imageId}.jpg`
+        const galleryImage = new ImageCompressor(file.buffer, imageId)
+        const response = await galleryImage.getGallaryImages(galleryDir)
+        const { width, height } = await sharp(file.buffer).metadata()
         
         const img = {
           order,
           sizes: { width, height },
-          path: { webp, jpg },
+          path: { ...response },
           id: imageId
         }
 
-        await sharp(file.buffer)
-          .jpeg({
-          quality: 80,
-          chromaSubsampling: '4:2:0'
-          })
-          .toFile(path.join(jpgPath, id, imageId + '.jpg'))
-        
-        await sharp(file.buffer)
-          .webp()
-          .toFile(path.join(webpPath, id, imageId + '.webp'))
-
-        imgArr[i] = img
+        imgArr.push(img)
       }
 
       await Gallery.findOneAndUpdate({ _id: id } ,{
@@ -100,12 +88,15 @@ router.post(
 
       gallery.images = nextImages
 
-      const pathToWebp = path.join(webpPath, galleryId, id + '.webp')
-      const pathToJpg = path.join(jpgPath, galleryId, id + '.jpg')
-
-      await fs.remove(pathToJpg)
-      await fs.remove(pathToWebp)
-
+      const galleryDir = path.join(dataDir, galleryId)
+      const files = await fs.readdir(galleryDir)
+      for (const file of files) {
+        const fileId = file.split('_')[0]
+        if (fileId == id) {
+          await fs.remove(path.join(galleryDir, file))
+        }
+      }
+      
       await gallery.save()
 
       res.json({ message: 'Изображение удалено' })
