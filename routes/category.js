@@ -89,18 +89,13 @@ router.post(
     try {
       const { category, title } = req.body
 
-      let titleUrl = await translate(title, { 
-        from: 'ru', to: 'en',
-        engine: translateEngine, key: translateKey
-      })
-      titleUrl = titleUrl.split(' ').join('-').toLowerCase()
-      const route = `/${category}/${titleUrl}`
+      const route = `/${category}/${title.toLowerCase()}`
 
       const order = await Gallery.countDocuments({ category })
 
       const gallery = new Gallery({
         title, category, route,
-        titleEn: titleUrl, 
+        titleEn: title, 
         order, titleImg: {
           webp: '',
           jpg: ''

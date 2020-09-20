@@ -14,9 +14,9 @@ const dataDir = path.join(__dirname, '..', 'data')
 router.get('/',
   async (req, res) => {
     try {
-      const { category, title } = req.query
+      const { _id } = req.query
 
-      const gallery = await Gallery.findOne({ category, titleEn: title })
+      const gallery = await Gallery.findById({ _id })
 
       res.json({ gallery })
     } catch (err) {
