@@ -8,7 +8,6 @@ router.get(
   async (req, res) => {
     try {
       const cards = await Gallery.find({ 'index.exist': true })
-
       res.json({ cards })
     } catch (err) {
       console.log(err)

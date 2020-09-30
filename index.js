@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -8,7 +10,7 @@ const checkDataFolder = require('./helpers/checkDataFolder')
 checkDataFolder()
 
 const app = express()
-const PORT = config.get('port') || 5000
+const PORT = process.env.PORT || 5000
 
 app.use(express.json({ extended: true }))
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -24,7 +26,7 @@ app.use('/api/main-pages', require('./routes/mainPages'))
 
 async function start() {
   try {
-    await mongoose.connect(config.get('mongoUrl'), {
+    await mongoose.connect(process.env.MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
